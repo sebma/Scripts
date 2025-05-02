@@ -1,5 +1,5 @@
 # Scripts
-(Almost) Some linux shell, python, perl scripts downloaded over time
+Some linux shell, python, perl scripts downloaded over time
 
 ## License
 
