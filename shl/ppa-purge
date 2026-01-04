@@ -36,6 +36,7 @@ usage() {
 	echo "	-d [distribution]	Override the default distribution choice."
 	echo "	-y 			Pass "-y --force-yes" to apt-get or "-y" to aptitude"
 	echo "	-i			Reverse preference of apt-get upon aptitude."
+	echo "	-v			Add -V to APT reinstall/purge commands."
 	echo "	-h			Display this help text"
 	echo
 	echo "Example usage commands:"
@@ -59,7 +60,7 @@ usage() {
 
 
 # Command line options
-while getopts "p:o:s:d:yih\?" opt; do
+while getopts "p:o:s:d:yivh\?" opt; do
 	case "$opt" in
 		p ) PPANAME="$OPTARG"				;;
 		o ) PPAOWNER="$OPTARG"				;;
@@ -67,6 +68,7 @@ while getopts "p:o:s:d:yih\?" opt; do
 		d ) DIST="$OPTARG"					;;
 		y ) FORCEINSTALL="true"				;;
 		i ) APTALT="true"					;;
+		v ) APTARG="-V "					;;
 		h ) usage 0;						;;
 		\?) usage 1;						;;
 		* ) warn "Unknown option '$opt'"; usage 1;	;;
@@ -78,15 +80,14 @@ if [ -z "$PPAOWNER" ]; then
     PPAOWNER=$1
 fi
 
-APTARG=""
 if [ ! -z "$APTALT" ]; then
 	if [ ! -z "$FORCEINSTALL" ]; then
-	APTARG="-y"
+	APTARG+="-y"
 	fi
 	APT=aptitude; APTALT=apt-get
 else
 	if [ ! -z "$FORCEINSTALL" ]; then
-	APTARG="-y --force-yes"
+	APTARG+="-y --force-yes"
 	fi
 	APT=apt-get; APTALT=aptitude
 fi
@@ -117,7 +118,7 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 msg "Updating packages lists"
-if ! $APT update > /dev/null; then 
+if ! $APT update; then 
     warn "$APT update failed for some reason"
     exit 1
 fi
@@ -191,7 +192,7 @@ for LIST in $(find /etc/apt/ -name "*.sources" -exec readlink -f '{}' \;); do
 done
 
 msg "Updating packages lists"
-$APT update > /dev/null || warn "$APT update failed for some reason"
+$APT update || warn "$APT update failed for some reason"
 
 # FIXME:
 # Workaround for now in case APT fails because of missing dependencies.
